@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Resultado de Autenticación</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f5f5f5;
+      text-align: center;
+    }
+    .result-container {
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      width: 90%;
+    }
+    .success {
+      background-color: #e8f5e9;
+      border-left: 5px solid #4caf50;
+    }
+    .error {
+      background-color: #ffebee;
+      border-left: 5px solid #f44336;
+    }
+    .icon {
+      font-size: 60px;
+      margin-bottom: 20px;
+    }
+    .success .icon {
+      color: #4caf50;
+    }
+    .error .icon {
+      color: #f44336;
+    }
+    h1 {
+      margin: 0 0 10px;
+    }
+    p {
+      margin: 0 0 20px;
+      color: #555;
+    }
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top: 4px solid #3498db;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="result-container" id="result-box">
+    <div class="icon" id="status-icon">✓</div>
+    <h1 id="status-title">Procesando...</h1>
+    <p id="status-message">Estamos verificando tu autenticación</p>
+    <div class="spinner" id="spinner"></div>
+  </div>
+
+  <script>
+    // Elementos del DOM
+    const resultBox = document.getElementById('result-box');
+    const statusIcon = document.getElementById('status-icon');
+    const statusTitle = document.getElementById('status-title');
+    const statusMessage = document.getElementById('status-message');
+    const spinner = document.getElementById('spinner');
+
+    // Obtener parámetros de la URL
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const error = params.get('error');
+
+    // Función para mostrar estado
+    function showStatus(type, title, message, autoRedirect = true) {
+      resultBox.classList.add(type);
+      
+      if (type === 'success') {
+        statusIcon.textContent = '✓';
+        statusIcon.style.color = '#4caf50';
+      } else {
+        statusIcon.textContent = '✕';
+        statusIcon.style.color = '#f44336';
+      }
+      
+      statusTitle.textContent = title;
+      statusMessage.textContent = message;
+      spinner.style.display = 'none';
+      
+      if (autoRedirect) {
+        setTimeout(() => {
+          window.location.href = 'http://localhost:3000';
+        }, 3000);
+      }
+    }
+
+    // Función para intercambiar código por token
+    async function exchangeCodeForToken(code) {
+      try {
+        const codeVerifier = localStorage.getItem('code_verifier');
+        const clientId = 'abb953282ec54e0e94ef3cd04dcf58ee'; 
+        const redirectUri = 'http://localhost:3000/callback.html';
+
+        const response = await fetch('https://accounts.spotify.com/api/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({
+            client_id: clientId,
+            grant_type: 'authorization_code',
+            code,
+            redirect_uri: redirectUri,
+            code_verifier: codeVerifier,
+          }),
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error_description || 'Error al obtener tokens');
+        }
+        
+        // Guardar tokens
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('refresh_token', data.refresh_token);
+        
+        // Mostrar éxito
+        showStatus(
+          'success',
+          '¡Autenticación exitosa!',
+          'Has sido autenticado correctamente con Spotify.'
+        );
+        
+      } catch (error) {
+        console.error('Error:', error);
+        showStatus(
+          'error',
+          'Error de autenticación',
+          error.message || 'Ocurrió un problema al conectar con Spotify.'
+        );
+      }
+    }
+
+    // Manejar el flujo
+    if (error) {
+      showStatus(
+        'error',
+        'Error de autenticación',
+        error === 'access_denied' ? 'Cancelaste el proceso de autenticación.' : `Error: ${error}`
+      );
+    } else if (code) {
+      exchangeCodeForToken(code);
+    } else {
+      showStatus(
+        'error',
+        'Error inesperado',
+        'No se recibió código de autenticación.',
+        false
+      );
+      document.querySelector('p').innerHTML += '<br><button onclick="window.location.href=\'http://localhost:3000\'">Volver al inicio</button>';
+    }
+  </script>
+</body>
+</html>
