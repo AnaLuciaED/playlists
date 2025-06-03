@@ -207,16 +207,16 @@
           <div>
             <label for="energia">Estado de ánimo:</label>
             <select id="energia" name="energiaRelajado">
-              <option value="energia">Energía (Punk, Rock)</option>
-              <option value="relajado">Relajado (Jazz, Clásica)</option>
+              <option value="energia" ${defaultPreferences.conSinLetra === 'energia' ? 'selected' : ''}>Energía</option> 
+              <option value="relajado" ${defaultPreferences.conSinLetra === 'relajado' ? 'selected' : ''}>Relajado</option>
             </select>
          </div>
     
           <div>
             <label for="descanso">Actividad:</label>
             <select id="descanso" name="descansoConcentracion">
-              <option value="descanso">Descanso (Música calmada)</option>
-              <option value="concentracion">Concentración (Música instrumental)</option>
+              <option value="descanso" ${defaultPreferences.conSinLetra === 'descanso' ? 'selected' : ''}>Descanso</option>
+              <option value="concentracion" ${defaultPreferences.conSinLetra === 'concentracion' ? 'selected' : ''}>Concentración</option>
            </select>
          </div>  
             
@@ -265,8 +265,8 @@
         e.preventDefault();
 
         const formData = {
-          energiaRelajado: document.getElementById('energia').value, // Ahora es string
-          descansoConcentracion: document.getElementById('descanso').value, // Ahora es string
+          energiaRelajado: document.getElementById('energia').value,
+          descansoConcentracion: document.getElementById('descanso').value, 
           conSinLetra: document.getElementById('letra').value,
           nuevosClasicos: document.getElementById('era').value,
           generoMezcla: document.getElementById('genero').value

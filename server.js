@@ -12,9 +12,12 @@ app.use(express.json());
 // Nueva ruta API para crear playlist
 const SpotifyClient = require('./src/spotify');
 
+
 app.post('/api/create-playlist', async (req, res) => {
+  console.log(req.body.accessToken)
   try {
-    const { accessToken, preferences } = req.body;
+    const accessToken = "BQCrTCQST611CeqL2vPJ_de0lLmDJ69F004ntxYjHadLIyNmw3kASs1cknaS7GCkQeUDmSz2Y5QAaXBFp8OB1c-k2ozImf6AWiPFx8qft1C9Dner0wy5PfYgnrDpEet-ReICKcDwy1OeHrHRWUDdG9pFnIxjfXw1Iw6B8yYpKunZ9m1FAs_b-STSk5_Av3ATbtjtfOi829oKU42BgJRpt6Ysp5X5X3sDqmGSqhvQ3N9EyYwxE5-0dKQ1caTLDL1aN0Y_5iSvCEk8aahQALtYy26neEPG_kFiiNaQtJuBoZBy"
+    const {preferences } = req.body;
     const spotifyClient = new SpotifyClient(accessToken); // Crear instancia
     
     // Obtener el ID del usuario
@@ -49,4 +52,4 @@ app.get('/api/default-preferences', (req, res) => {
 
 app.listen(3000, () => {
   console.log('Servidor corriendo en http://localhost:3000');
-});
+})
